@@ -1,7 +1,17 @@
 /** @type {import('next').NextConfig} */
+const path = require("path");
+
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["framer-motion"],
+  webpack: (config) => {
+    config.resolve.alias["@/db"] = path.resolve(__dirname, "src/db/index.ts");
+    config.resolve.alias["@/db/schema"] = path.resolve(__dirname, "src/db/schema.ts");
+    config.resolve.alias["@/lib"] = path.resolve(__dirname, "src/lib");
+    config.resolve.alias["@/components"] = path.resolve(__dirname, "src/components");
+    config.resolve.alias["@"] = path.resolve(__dirname, "src");
+    return config;
+  },
   async headers() {
     return [
       {
