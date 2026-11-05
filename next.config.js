@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "experimental-trace",
   reactStrictMode: true,
   transpilePackages: ["framer-motion"],
   async headers() {
