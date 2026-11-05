@@ -21,6 +21,14 @@
     "plugins": [{ "name": "next" }],
     "types": ["@cloudflare/workers-types"]
   },
+  "baseUrl": ".",
+  "paths": {
+    "@/db": ["./src/db/index.ts"],
+    "@/db/schema": ["./src/db/schema.ts"],
+    "@/lib/*": ["./src/lib/*"],
+    "@/components/*": ["./src/components/*"],
+    "@/*": ["./src/*"]
+  },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }
