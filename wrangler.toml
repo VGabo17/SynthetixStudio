@@ -1,0 +1,32 @@
+name = "synthetix-studio"
+compatibility_date = "2024-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "synthetix-studio"
+database_id = ""
+
+[[kv_namespaces]]
+binding = "KV"
+id = ""
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "synthetix-studio-assets"
+
+[observability]
+enabled = true
+
+[vars]
+JWT_ACCESS_TTL_SECONDS = "900"
+JWT_REFRESH_TTL_DAYS = "7"
+STRIPE_WEBHOOK_SECRET = ""
+PAYPAL_WEBHOOK_SECRET = ""
+CRYPTOMUS_WEBHOOK_SECRET = ""
+BINANCE_PAY_SECRET = ""
+NEXT_PUBLIC_DISCORD_CLIENT_ID = ""
+DISCORD_CLIENT_SECRET = ""
+DISCORD_GUILD_ID = ""
+LICENSE_PRIVATE_KEY_PEM = ""
+LICENSE_PUBLIC_KEY_PEM = ""
