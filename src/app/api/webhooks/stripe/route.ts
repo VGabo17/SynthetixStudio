@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getDb } from "@/database";
-import { payments, projects, auditLogs } from "@/database/schema";
+import { getDb } from "@/db";
+import { payments, projects, auditLogs } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { hmacSha256Verify, generateSecureToken } from "@/lib/crypto";
 import { z } from "zod";

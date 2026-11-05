@@ -4,7 +4,7 @@ type Env = { R2: R2Bucket };
 
 export type PresignedUrlResult = { url: string; expiresAt: number };
 
-function sha256Hex(data: string): Promise<string> {
+async function sha256Hex(data: string): Promise<string> {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(data));
   return arrayBufferToBase64Url(buf).replace(/[^a-f0-9]/gi, "");
 }
