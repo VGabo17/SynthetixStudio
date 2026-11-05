@@ -39,7 +39,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const rawBody = await request.text();
-  const signedPayload = `${transmissionHeaders(): string}\n${rawBody}`;
+  const signedPayload = `${transmissionHeaders()}\n${rawBody}`;
 
   let event: unknown;
   try {
