@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { licenses, auditLogs } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
@@ -27,6 +27,7 @@ export const runtime = "edge";
 export async function POST(request: Request): Promise<NextResponse> {
   const env = request.env as unknown as Env;
   const now = env.NOW ?? Math.floor(Date.now() / 1000);
+  const database = getDb(env);
 
   let body: unknown;
   try {
@@ -64,7 +65,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
   await env.KV.put(nonceKey, "1", { expirationTtl: 120 });
 
-  const licenseRow = await db
+  const licenseRow = await database
     .select()
     .from(licenses)
     .where(eq(licenses.license_key, license_key))
@@ -152,7 +153,7 @@ async function logAudit(
   metadata: Record<string, unknown>
 ): Promise<void> {
   try {
-    await db.insert(auditLogs).values({
+    await getDb(env).insert(auditLogs).values({
       id: generateSecureToken(16),
       user_id: userId,
       action,
