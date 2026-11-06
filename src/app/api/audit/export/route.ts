@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { auditLogs, users } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
+import type { D1Database } from "@cloudflare/workers-types";
 
 export const runtime = "edge";
 
@@ -19,11 +20,13 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 
   const { env } = getRequestContext();
-  if (!env || !env.DB) {
+  const dbBinding = (env as Record<string, unknown>)?.DB as D1Database | undefined;
+
+  if (!dbBinding) {
     return NextResponse.json({ error: "D1 Database binding missing" }, { status: 500 });
   }
 
-  const database = getDb(env);
+  const database = getDb({ DB: dbBinding });
   const url = new URL(request.url);
   const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "1000", 10), 5000);
   const offset = parseInt(url.searchParams.get("offset") ?? "0", 10);
