@@ -1,25 +1,31 @@
+import { getRequestContext } from "@cloudflare/next-on-pages";
 import { NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { auditLogs, users } from "@/db/schema";
-import { eq } from "drizzle-orm";
-
-type Env = {
-  DB: D1Database;
-};
+import { eq, desc } from "drizzle-orm";
 
 export const runtime = "edge";
 
-export async function GET(request: Request): Promise<NextResponse> {
-  const env = (request as unknown as { env?: Env }).env ?? ({} as Env);
-  const database = getDb(env);
+function escapeCsv(val: unknown): string {
+  if (val === null || val === undefined) return "";
+  const str = String(val);
+  return `"${str.replace(/"/g, '""')}"`;
+}
 
+export async function GET(request: Request): Promise<NextResponse> {
   const roleHeader = request.headers.get("x-user-role");
   if (roleHeader !== "SUPER_ADMIN" && roleHeader !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const { env } = getRequestContext();
+  if (!env || !env.DB) {
+    return NextResponse.json({ error: "D1 Database binding missing" }, { status: 500 });
+  }
+
+  const database = getDb(env);
   const url = new URL(request.url);
-  const limit = parseInt(url.searchParams.get("limit") ?? "1000", 10);
+  const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "1000", 10), 5000);
   const offset = parseInt(url.searchParams.get("offset") ?? "0", 10);
 
   const logs = await database
@@ -37,14 +43,27 @@ export async function GET(request: Request): Promise<NextResponse> {
     })
     .from(auditLogs)
     .leftJoin(users, eq(auditLogs.user_id, users.id))
-    .orderBy(auditLogs.created_at)
+    .orderBy(desc(auditLogs.created_at))
     .limit(limit)
     .offset(offset);
 
   const csvHeader = "id,user_id,user_email,action,entity_type,entity_id,metadata,ip_address,user_agent,created_at\n";
-  const csvRows = logs.map((log) =>
-    `${log.id},${log.user_id ?? ""},"${log.user_email ?? ""}","${log.action}","${log.entity_type}",${log.entity_id ?? ""},"${log.metadata ?? ""}","${log.ip_address ?? ""}","${log.user_agent ?? ""}",${log.created_at}`
-  ).join("\n");
+  const csvRows = logs
+    .map((log) =>
+      [
+        log.id,
+        log.user_id ?? "",
+        escapeCsv(log.user_email),
+        escapeCsv(log.action),
+        escapeCsv(log.entity_type),
+        log.entity_id ?? "",
+        escapeCsv(log.metadata),
+        escapeCsv(log.ip_address),
+        escapeCsv(log.user_agent),
+        log.created_at,
+      ].join(",")
+    )
+    .join("\n");
 
   return new NextResponse(csvHeader + csvRows, {
     status: 200,
